@@ -14,7 +14,8 @@ from sklearn.model_selection import train_test_split
 # Configurações e Ajustes de Display
 # ====================================================
 # Caminho da pasta com os CSVs
-pasta = r'C:\Users\aldas\OneDrive\Documentos\INTART-TP2'  # Ajuste se necessário
+pasta = os.path.dirname(os.path.abspath(__file__))
+ # Ajuste se necessário
 # Configurações para exibição tabular truncada com ellipsis
 pd.set_option('display.max_rows', 20)
 pd.set_option('display.max_columns', 20)
@@ -144,25 +145,57 @@ if __name__ == '__main__':
     df = carregar_dados(pasta)
     df = preprocessar(df)
 
-    # Remover variável X1 (irrelevante)
     if 'X1' in df.columns:
         df = df.drop(columns=['X1'])
 
-    # Estatísticas Gerais (truncadas com ellipsis)
-    print("\n===== Estatísticas Gerais =====")
+    print("\n" + "="*60)
+    print("📊 ESTATÍSTICAS GERAIS")
+    print("="*60)
     print(estatisticas(df))
 
-    # Estatísticas por Setor (ellipses indicam todas as colunas)
-    print("\n===== Estatísticas por Setor =====")
+    print("\n" + "="*60)
+    print("📊 ESTATÍSTICAS POR SETOR (S)")
+    print("="*60)
     print(estatisticas(df, grupo='S'))
 
-    print("\n===== Heatmap de Correlação =====")
-    plot_heatmap(df)
+    print("\n" + "="*60)
+    print("🔥 HEATMAP DE CORRELAÇÃO")
+    print("="*60)
+    plt.figure(figsize=(12, 10))
+    sns.heatmap(df.select_dtypes(include=[np.number]).corr(),
+                cmap='coolwarm', center=0)
+    plt.title('Heatmap de Correlação')
+    plt.tight_layout()
+    plt.savefig("heatmap_correlacao.png")
+    plt.close()
+    print("📸 Guardado como: heatmap_correlacao.png")
 
-    print("\n===== Scatterplot Matrix (X2 a X5) =====")
-    plot_scatter_matrix(df, cols=['X2','X3','X4','X5'])
+    print("\n" + "="*60)
+    print("📷 SCATTERPLOT MATRIX (X2 a X5)")
+    print("="*60)
+    sample = df.sample(n=min(200, len(df)), random_state=42)
+    sns.pairplot(sample[['X2', 'X3', 'X4', 'X5', 'S']], hue='S')
+    plt.savefig("scatterplot_matrix.png")
+    plt.close()
+    print("📸 Guardado como: scatterplot_matrix.png")
 
-    print("\n===== Top Atributos Importantes =====")
-    print(atributos_importantes(df))
+    print("\n" + "="*60)
+    print("⭐ TOP 10 ATRIBUTOS MAIS IMPORTANTES")
+    print("="*60)
+    top_atributos = atributos_importantes(df)
+    print(top_atributos)
 
-    print("\nAnálise finalizada com sucesso!")
+    # Gráfico dos atributos mais importantes
+    top_atributos.plot(kind='barh', title='Top 10 Atributos Mais Importantes')
+    plt.xlabel("Importância")
+    plt.tight_layout()
+    plt.savefig("grafico_top_atributos.png")
+    plt.close()
+    print("📸 Guardado como: grafico_top_atributos.png")
+
+    print("\n📌 CONCLUSÃO MANUAL (exemplo):")
+    print("- A maioria das variáveis apresenta distribuição assimétrica.")
+    print("- Existem fortes correlações entre certas variáveis (ver heatmap).")
+    print("- X50, X47 e X24 são os atributos mais relevantes para o target 'S'.")
+
+    print("\n✅ Análise estatística e visual finalizada com sucesso!")
